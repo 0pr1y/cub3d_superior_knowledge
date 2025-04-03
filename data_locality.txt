@@ -1,0 +1,85 @@
+# Pourquoi un tableau continu est plus rapide qu'un tableau de pointeurs
+
+C'est une excellente question qui touche au cœur même des performances informatiques. Je vais vous l'expliquer avec des exemples concrets.
+
+## La différence fondamentale en mémoire
+
+Quand vous déclarez `int **map` (un tableau de pointeurs vers des tableaux), voici ce qui se passe en mémoire:
+
+```
+Mémoire:
+[Ptr vers ligne 0] --> [val][val][val][val]... (ligne 0 stockée quelque part)
+[Ptr vers ligne 1] --> [val][val][val][val]... (ligne 1 stockée ailleurs)
+[Ptr vers ligne 2] --> [val][val][val][val]... (ligne 2 encore ailleurs)
+...
+```
+
+Chaque ligne est allouée séparément avec `malloc()`, et peut se retrouver n'importe où en mémoire.
+
+En revanche, avec `int *map` (un tableau continu):
+
+```
+Mémoire:
+[val][val][val][val]... (ligne 0)
+[val][val][val][val]... (ligne 1, située juste après ligne 0)
+[val][val][val][val]... (ligne 2, située juste après ligne 1)
+...
+```
+
+Tout est stocké dans un seul bloc contigu de mémoire.
+
+## Impact sur les accès mémoire
+
+Quand vous parcourez la carte avec `int **map`:
+
+1. Pour accéder à `map[y][x]`:
+   - Le CPU doit d'abord charger l'adresse `map[y]` (premier accès mémoire)
+   - Puis utiliser cette adresse pour charger `map[y][x]` (deuxième accès mémoire)
+
+Avec `int *map`:
+
+1. Pour accéder à `map[y * width + x]`:
+   - Le CPU calcule l'offset `y * width + x`
+   - Puis charge directement la valeur en un seul accès mémoire
+
+## L'effet de cache qui change tout
+
+Voici l'élément crucial: quand le processeur accède à une adresse mémoire, il ne charge pas seulement cette valeur, mais toute une ligne de cache (64 octets typiquement, soit 16 entiers de 4 octets).
+
+Avec un tableau de pointeurs (`int **map`):
+- Si vous parcourez la ligne 0 de gauche à droite, c'est efficace car les valeurs adjacentes sont chargées en cache
+- Mais quand vous passez à la ligne 1, c'est un "cache miss" complet car cette ligne est ailleurs en mémoire
+
+Avec un tableau continu (`int *map`):
+- Parcourir la ligne 0 est efficace
+- **Et quand vous passez à la ligne 1, elle est souvent déjà dans le cache** car elle suit immédiatement la ligne 0 en mémoire
+
+## Un exemple concret
+
+Imaginons une carte 1000×1000:
+
+1. Avec `int **map`:
+   - Les 1000 lignes sont éparpillées en mémoire
+   - Parcourir toute la carte = ~1000 cache miss (un par ligne)
+
+2. Avec `int *map`:
+   - Une ligne de cache (64 octets) contient 16 entiers
+   - 1000×1000 entiers = 4 Mo total
+   - Nombre de cache miss = 4 Mo ÷ 64 octets = ~65,536 (beaucoup moins que 1 million)
+
+## Mesures de performance réelles
+
+Dans un raycaster, l'impact est considérable:
+- Accéder à des éléments adjacents dans un tableau continu: ~4-10 cycles CPU
+- Accéder via un tableau de pointeurs: ~100-300 cycles CPU (si cache miss)
+
+Sur un projet comme cub3D, cela peut faire la différence entre:
+- 30 FPS (avec `int **map`)
+- 60 FPS ou plus (avec `int *map`)
+
+La différence est encore plus grande quand vous considérez que le raycasting nécessite d'accéder à la carte de manière non séquentielle (en suivant les rayons dans différentes directions).
+
+En résumé, un tableau continu offre:
+1. Moins d'indirections (un seul accès mémoire au lieu de deux)
+2. Meilleure utilisation du cache (données adjacentes physiquement en mémoire)
+3. Moins d'allocations mémoire (un seul malloc au lieu de nombreux)
