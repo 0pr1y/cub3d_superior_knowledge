@@ -1,0 +1,24 @@
+Moves fluides :
+1. Utiliser gettimeofday() pour calculer le temps écoulé entre chaque frame
+2. Multiplier la vitesse de déplacement/rotation par ce delta de temps
+3. Mettre à jour la position/angle du joueur en fonction de ce calcul
+
+void    update_player_position(t_player *player, double delta_time)
+{
+    double  move_speed;
+    double  rotate_speed;
+    int     key_state;
+    
+    move_speed = BASE_MOVE_SPEED * delta_time;
+    rotate_speed = BASE_ROTATE_SPEED * delta_time;
+    key_state = get_key_state();
+    
+    if (key_state & KEY_W)
+        move_player_forward(player, move_speed);
+    if (key_state & KEY_S)
+        move_player_backward(player, move_speed);
+    if (key_state & KEY_LEFT)
+        rotate_player(player, -rotate_speed);
+    if (key_state & KEY_RIGHT)
+        rotate_player(player, rotate_speed);
+}
