@@ -1,7 +1,5 @@
 # Pourquoi un tableau continu est plus rapide qu'un tableau de pointeurs
 
-C'est une excellente question qui touche au cœur même des performances informatiques. Je vais vous l'expliquer avec des exemples concrets.
-
 ## La différence fondamentale en mémoire
 
 Quand vous déclarez `int **map` (un tableau de pointeurs vers des tableaux), voici ce qui se passe en mémoire:
