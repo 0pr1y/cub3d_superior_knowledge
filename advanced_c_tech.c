@@ -55,7 +55,7 @@ Interet :
 
 /* Data Locality */
 
-//(voir fichier explications)
+//(voir fichier explications [data.locality.txt)
 
 // Pour le raycaster :
 
