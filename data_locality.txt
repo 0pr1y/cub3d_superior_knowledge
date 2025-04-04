@@ -2,7 +2,7 @@
 
 ## La différence fondamentale en mémoire
 
-Quand vous déclarez `int **map` (un tableau de pointeurs vers des tableaux), voici ce qui se passe en mémoire:
+Quand on declare `int **map` (un tableau de pointeurs vers des tableaux), il se passe ca en mémoire:
 
 ```
 Mémoire:
@@ -45,12 +45,12 @@ Avec `int *map`:
 Voici l'élément crucial: quand le processeur accède à une adresse mémoire, il ne charge pas seulement cette valeur, mais toute une ligne de cache (64 octets typiquement, soit 16 entiers de 4 octets).
 
 Avec un tableau de pointeurs (`int **map`):
-- Si vous parcourez la ligne 0 de gauche à droite, c'est efficace car les valeurs adjacentes sont chargées en cache
-- Mais quand vous passez à la ligne 1, c'est un "cache miss" complet car cette ligne est ailleurs en mémoire
+- Si on parcoure la ligne 0 de gauche à droite, c'est efficace car les valeurs adjacentes sont chargées en cache
+- Mais quand on passe à la ligne 1, c'est un "cache miss" complet car cette ligne est ailleurs en mémoire
 
 Avec un tableau continu (`int *map`):
 - Parcourir la ligne 0 est efficace
-- **Et quand vous passez à la ligne 1, elle est souvent déjà dans le cache** car elle suit immédiatement la ligne 0 en mémoire
+- **Et quand on passe à la ligne 1, elle est souvent déjà dans le cache** car elle suit immédiatement la ligne 0 en mémoire
 
 ## Un exemple concret
 
@@ -75,9 +75,9 @@ Sur un projet comme cub3D, cela peut faire la différence entre:
 - 30 FPS (avec `int **map`)
 - 60 FPS ou plus (avec `int *map`)
 
-La différence est encore plus grande quand vous considérez que le raycasting nécessite d'accéder à la carte de manière non séquentielle (en suivant les rayons dans différentes directions).
+La différence est encore plus grande quand on considere que le raycasting nécessite d'accéder à la carte de manière non séquentielle (en suivant les rayons dans différentes directions).
 
-En résumé, un tableau continu offre:
+Donc :
 1. Moins d'indirections (un seul accès mémoire au lieu de deux)
 2. Meilleure utilisation du cache (données adjacentes physiquement en mémoire)
 3. Moins d'allocations mémoire (un seul malloc au lieu de nombreux)
